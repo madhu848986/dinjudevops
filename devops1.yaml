@@ -1,0 +1,43 @@
+trigger:
+  - main   # Runs pipeline when code is pushed to main branch
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+
+stages:
+- stage: Build
+  displayName: "Build Stage"
+  jobs:
+  - job: BuildJob
+    steps:
+    - task: UseNode@1
+      inputs:
+        version: '18.x'
+
+    - script: |
+        npm install
+        npm run build
+      displayName: "Install and Build"
+
+- stage: Test
+  displayName: "Test Stage"
+  dependsOn: Build
+  jobs:
+  - job: TestJob
+    steps:
+    - script: |
+        npm test
+      displayName: "Run Tests"
+
+- stage: Deploy
+  displayName: "Deploy Stage"
+  dependsOn: Test
+  jobs:
+  - job: DeployJob
+    steps:
+    - script: |
+        echo "Deploying application..."
+      displayName: "Deploy Step"
